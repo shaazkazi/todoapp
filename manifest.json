@@ -1,6 +1,6 @@
 {
-    "theme_color": "#007AFF",
-    "background_color": "#F2F2F7",
+    "theme_color": "#2E1065",
+    "background_color": "#2E1065",
     "icons": [
       {
         "purpose": "maskable",
@@ -19,8 +19,8 @@
     "display": "standalone",
     "dir": "auto",
     "lang": "en-GB",
-    "name": "Task Master",
-    "short_name": "Tasks",
+    "name": "TooDooList",
+    "short_name": "TooDooList",
     "start_url": "/",
     "scope": "/",
     "id": "/",

@@ -135,16 +135,16 @@ function App() {
       </form>
 
       <div className="task-list">
-        {filteredTasks.map((task) => (
+        {filteredTasks.map((task, index) => (
           <SwipeToDelete
             key={task.id}
             onDelete={() => deleteTask(task.id)}
             height={88}
-            deleteWidth={75}
-            deleteColor="transparent"
-            deleteText="Delete"
           >
-            <div className={`task-item ${task.completed ? 'completed' : ''}`}>
+            <div 
+              className={`task-item ${task.completed ? 'completed' : ''}`} 
+              style={{animationDelay: `${index * 0.05}s`}}
+            >
               <div className="task-content">
                 <div 
                   className={`task-checkbox ${task.completed ? 'checked' : ''}`}
