@@ -15,6 +15,7 @@ function App() {
   const [isLogin, setIsLogin] = useState(true);
   const [newPassword, setNewPassword] = useState('');
   const [hash, setHash] = useState(null);
+  const [isResetPassword, setIsResetPassword] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -205,6 +206,23 @@ function App() {
     return true;
   });
 
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setError("Check your email for password reset link!");
+    }
+    setLoading(false);
+  };
+
   if (hash) {
     return (
       <div className="auth-container">
@@ -226,25 +244,6 @@ function App() {
   }
 
   if (!session) {
-    const [isResetPassword, setIsResetPassword] = useState(false);
-
-    const handleResetPassword = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setError(null);
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        setError("Check your email for password reset link!");
-      }
-      setLoading(false);
-    };
-
     return (
       <div className="auth-container">
         <form onSubmit={isResetPassword ? handleResetPassword : isLogin ? handleLogin : handleSignUp} className="auth-form">
