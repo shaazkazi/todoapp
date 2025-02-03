@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "./utils/supabase";
 import { format } from "date-fns";
 import SwipeToDelete from 'react-swipe-to-delete-ios';
+
 function App() {
   const [session, setSession] = useState(null);
   const [email, setEmail] = useState('');
@@ -12,6 +13,8 @@ function App() {
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("all");
   const [isLogin, setIsLogin] = useState(true);
+  const [newPassword, setNewPassword] = useState('');
+  const [hash, setHash] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -46,6 +49,13 @@ function App() {
       };
     }
   }, [session]);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('type=recovery')) {
+      setHash(hash);
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -87,71 +97,24 @@ function App() {
       setSession(null);
     }
   };
-  if (!session) {
-    const [isResetPassword, setIsResetPassword] = useState(false);
 
-    const handleResetPassword = async (e) => {
-      e.preventDefault();
-      setLoading(true);
-      setError(null);
-      
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
-      });
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
 
-      if (error) {
-        setError(error.message);
-      } else {
-        setError("Check your email for password reset link!");
-      }
-      setLoading(false);
-    };
+    if (error) {
+      setError(error.message);
+    } else {
+      setError('Password updated successfully!');
+      setTimeout(() => window.location.href = '/', 2000);
+    }
+    setLoading(false);
+  };
 
-    return (
-      <div className="auth-container">
-        <form onSubmit={isResetPassword ? handleResetPassword : isLogin ? handleLogin : handleSignUp} className="auth-form">
-          <h1>Tasks</h1>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {!isResetPassword && (
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          )}
-          {error && <div className="auth-error">{error}</div>}
-          <button type="submit" disabled={loading}>
-            {loading ? 'Processing...' : isResetPassword ? 'Reset Password' : isLogin ? 'Login' : 'Sign Up'}
-          </button>
-          <button 
-            type="button" 
-            className="auth-switch"
-            onClick={() => {
-              setIsResetPassword(false);
-              setIsLogin(!isLogin);
-            }}
-          >
-            {isLogin ? 'Need an account? Sign Up' : 'Have an account? Login'}
-          </button>
-          {isLogin && (
-            <button 
-              type="button" 
-              className="auth-switch"
-              onClick={() => setIsResetPassword(!isResetPassword)}
-            >
-              {isResetPassword ? 'Back to Login' : 'Forgot Password?'}
-            </button>
-          )}
-        </form>
-      </div>
-    );
-  }
   const fetchTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
@@ -242,10 +205,49 @@ function App() {
     return true;
   });
 
-  if (!session) {
+  if (hash) {
     return (
       <div className="auth-container">
-        <form onSubmit={handleLogin} className="auth-form">
+        <form onSubmit={handleUpdatePassword} className="auth-form">
+          <h1>Update Password</h1>
+          <input
+            type="password"
+            placeholder="New Password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          {error && <div className="auth-error">{error}</div>}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  if (!session) {
+    const [isResetPassword, setIsResetPassword] = useState(false);
+
+    const handleResetPassword = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError(null);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setError("Check your email for password reset link!");
+      }
+      setLoading(false);
+    };
+
+    return (
+      <div className="auth-container">
+        <form onSubmit={isResetPassword ? handleResetPassword : isLogin ? handleLogin : handleSignUp} className="auth-form">
           <h1>Tasks</h1>
           <input
             type="email"
@@ -253,17 +255,42 @@ function App() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button type="submit">Login</button>
+          {!isResetPassword && (
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          )}
+          {error && <div className="auth-error">{error}</div>}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Processing...' : isResetPassword ? 'Reset Password' : isLogin ? 'Login' : 'Sign Up'}
+          </button>
+          <button 
+            type="button" 
+            className="auth-switch"
+            onClick={() => {
+              setIsResetPassword(false);
+              setIsLogin(!isLogin);
+            }}
+          >
+            {isLogin ? 'Need an account? Sign Up' : 'Have an account? Login'}
+          </button>
+          {isLogin && (
+            <button 
+              type="button" 
+              className="auth-switch"
+              onClick={() => setIsResetPassword(!isResetPassword)}
+            >
+              {isResetPassword ? 'Back to Login' : 'Forgot Password?'}
+            </button>
+          )}
         </form>
       </div>
     );
   }
+
   return (
     <div className="container">
       <div className="header">
