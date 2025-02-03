@@ -21,7 +21,7 @@ function App() {
   const [isResetPassword, setIsResetPassword] = useState(false);
 
   // New state for enhancements
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useState('dark');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTasks, setSelectedTasks] = useState([]);
   const [taskCategory, setTaskCategory] = useState('personal');
