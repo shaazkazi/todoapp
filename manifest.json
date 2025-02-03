@@ -1,0 +1,39 @@
+{
+    "theme_color": "#007AFF",
+    "background_color": "#F2F2F7",
+    "icons": [
+      {
+        "purpose": "maskable",
+        "sizes": "512x512",
+        "src": "/icons/icon512_maskable.png",
+        "type": "image/png"
+      },
+      {
+        "purpose": "any",
+        "sizes": "512x512",
+        "src": "/icons/icon512_rounded.png",
+        "type": "image/png"
+      }
+    ],
+    "orientation": "portrait",
+    "display": "standalone",
+    "dir": "auto",
+    "lang": "en-GB",
+    "name": "Task Master",
+    "short_name": "Tasks",
+    "start_url": "/",
+    "scope": "/",
+    "id": "/",
+    "description": "Organize your tasks efficiently",
+    "categories": ["productivity", "utilities"],
+    "display_override": ["standalone", "browser"],
+    "prefer_related_applications": false,
+    "shortcuts": [
+      {
+        "name": "Add New Task",
+        "url": "/new",
+        "description": "Create a new task"
+      }
+    ]
+  }
+  

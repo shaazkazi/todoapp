@@ -1,0 +1,272 @@
+:root {
+  --ios-blue: #007AFF;
+  --ios-red: #FF3B30;
+  --ios-background: #000000;
+  --ios-surface: #1C1C1E;
+  --ios-gray: #8E8E93;
+  --ios-border: #38383A;
+  --text: #FFFFFF;
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: var(--ios-background);
+  margin: 0;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  color: var(--text);
+}
+
+.container {
+  max-width: 100%;
+  padding: 16px;
+  padding-top: max(16px, var(--safe-area-inset-top));
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(28, 28, 30, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 16px;
+  z-index: 100;
+}
+
+.header h1 {
+  font-size: 34px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 8px;
+  background: var(--ios-surface);
+  border-radius: 12px;
+}
+
+.filter-buttons button {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 15px;
+  background: transparent;
+  color: var(--ios-gray);
+  border: none;
+  cursor: pointer;
+}
+
+.filter-buttons button.active {
+  background: var(--ios-blue);
+  color: white;
+}
+
+.input-group {
+  margin: 16px 0;
+  position: relative;
+  display: flex;
+  gap: 8px;
+}
+
+.input-group input {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--ios-border);
+  font-size: 17px;
+  background: var(--ios-surface);
+  color: var(--text);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: var(--ios-blue);
+}
+
+.add-button {
+  padding: 12px 24px;
+  background: var(--ios-blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.task-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.task-item {
+  background: var(--ios-surface);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.task-content {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.task-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--ios-blue);
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.task-checkbox.checked {
+  background: var(--ios-blue);
+}
+
+.task-checkbox.checked::after {
+  content: '✓';
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+}
+
+.task-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-title {
+  font-size: 17px;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--ios-gray);
+}
+
+.task-meta {
+  font-size: 13px;
+  color: var(--ios-gray);
+}
+
+.swipe-actions {
+  display: flex;
+  height: 100%;
+}
+
+.action-button {
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+.delete-action {
+  background: var(--ios-red);
+}
+
+.complete-action {
+  background: var(--ios-blue);
+}
+/* Dark mode styles */
+body {
+  background-color: #121212;
+  color: #E0E0E0;
+  font-family: 'Inter', sans-serif;
+}
+
+.task-container {
+  background: #1E1E1E;
+  border: 1px solid #333333;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.task-title {
+  color: #E0E0E0;
+  font-size: 16px;
+}
+
+.task-completed {
+  color: #8F8F8F; /* Faded text for completed tasks */
+  text-decoration: line-through;
+}
+
+.button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.complete-btn {
+  background-color: #BB86FC;
+  color: #121212;
+}
+
+.complete-btn:hover {
+  background-color: #9F6EF2;
+}
+
+.delete-btn {
+  background-color: #FF5252;
+  color: white;
+}
+
+.delete-btn:hover {
+  background-color: #E04848;
+}
+/* Update/add these styles */
+.swipe-to-delete {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.swipe-to-delete__background {
+  background: var(--ios-red) !important;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 24px;
+}
+
+.swipe-to-delete__text {
+  color: white;
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.task-item {
+  border-radius: 12px;
+  background: var(--ios-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
