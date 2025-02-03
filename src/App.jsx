@@ -93,11 +93,16 @@ function App() {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut({
+      scope: 'local'
+    });
+    
     if (!error) {
       setSession(null);
+      window.location.href = '/';
     }
   };
+  
 
   const handleUpdatePassword = async (e) => {
     e.preventDefault();
