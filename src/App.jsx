@@ -87,11 +87,29 @@ function App() {
       setSession(null);
     }
   };
-
   if (!session) {
+    const [isResetPassword, setIsResetPassword] = useState(false);
+
+    const handleResetPassword = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      setError(null);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+
+      if (error) {
+        setError(error.message);
+      } else {
+        setError("Check your email for password reset link!");
+      }
+      setLoading(false);
+    };
+
     return (
       <div className="auth-container">
-        <form onSubmit={isLogin ? handleLogin : handleSignUp} className="auth-form">
+        <form onSubmit={isResetPassword ? handleResetPassword : isLogin ? handleLogin : handleSignUp} className="auth-form">
           <h1>Tasks</h1>
           <input
             type="email"
@@ -99,28 +117,41 @@ function App() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {!isResetPassword && (
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          )}
           {error && <div className="auth-error">{error}</div>}
           <button type="submit" disabled={loading}>
-            {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+            {loading ? 'Processing...' : isResetPassword ? 'Reset Password' : isLogin ? 'Login' : 'Sign Up'}
           </button>
           <button 
             type="button" 
             className="auth-switch"
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsResetPassword(false);
+              setIsLogin(!isLogin);
+            }}
           >
             {isLogin ? 'Need an account? Sign Up' : 'Have an account? Login'}
           </button>
+          {isLogin && (
+            <button 
+              type="button" 
+              className="auth-switch"
+              onClick={() => setIsResetPassword(!isResetPassword)}
+            >
+              {isResetPassword ? 'Back to Login' : 'Forgot Password?'}
+            </button>
+          )}
         </form>
       </div>
     );
   }
-
   const fetchTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
