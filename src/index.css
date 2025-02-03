@@ -424,3 +424,15 @@ body {
   background: rgba(255, 59, 48, 0.1);
   border-radius: 8px;
 }
+.auth-switch {
+  background: transparent;
+  border: none;
+  color: var(--ios-blue);
+  font-size: 15px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.auth-switch:hover {
+  text-decoration: underline;
+}

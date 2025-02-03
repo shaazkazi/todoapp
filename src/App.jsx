@@ -11,6 +11,7 @@ function App() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("all");
+  const [isLogin, setIsLogin] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,6 +63,24 @@ function App() {
     setLoading(false);
   };
 
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setError("Check your email for verification link!");
+    }
+    setLoading(false);
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (!error) {
@@ -72,7 +91,7 @@ function App() {
   if (!session) {
     return (
       <div className="auth-container">
-        <form onSubmit={handleLogin} className="auth-form">
+        <form onSubmit={isLogin ? handleLogin : handleSignUp} className="auth-form">
           <h1>Tasks</h1>
           <input
             type="email"
@@ -88,7 +107,14 @@ function App() {
           />
           {error && <div className="auth-error">{error}</div>}
           <button type="submit" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Processing...' : isLogin ? 'Login' : 'Sign Up'}
+          </button>
+          <button 
+            type="button" 
+            className="auth-switch"
+            onClick={() => setIsLogin(!isLogin)}
+          >
+            {isLogin ? 'Need an account? Sign Up' : 'Have an account? Login'}
           </button>
         </form>
       </div>
