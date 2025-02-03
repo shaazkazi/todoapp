@@ -9,7 +9,24 @@ function App() {
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
+    // Existing fetch tasks call
     fetchTasks();
+
+    // Subscribe to real-time changes
+    const subscription = supabase
+      .channel('tasks')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'tasks' }, 
+        (payload) => {
+          fetchTasks();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchTasks = async () => {
