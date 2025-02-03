@@ -1,33 +1,99 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "./utils/supabase";
 import { format } from "date-fns";
 import SwipeToDelete from 'react-swipe-to-delete-ios';
-
 function App() {
+  const [session, setSession] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    // Existing fetch tasks call
-    fetchTasks();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
 
-    // Subscribe to real-time changes
-    const subscription = supabase
-      .channel('tasks')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'tasks' }, 
-        (payload) => {
-          fetchTasks();
-        }
-      )
-      .subscribe();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
 
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchTasks();
+
+      const subscription = supabase
+        .channel('tasks')
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'tasks' }, 
+          (payload) => {
+            fetchTasks();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [session]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      setError(error.message);
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      setSession(null);
+    }
+  };
+
+  if (!session) {
+    return (
+      <div className="auth-container">
+        <form onSubmit={handleLogin} className="auth-form">
+          <h1>Tasks</h1>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {error && <div className="auth-error">{error}</div>}
+          <button type="submit" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   const fetchTasks = async () => {
     const { data, error } = await supabase
@@ -48,7 +114,8 @@ function App() {
       .insert([{ 
         title: newTask,
         completed: false,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        user_id: session.user.id
       }]);
     
     if (!error) {
@@ -66,10 +133,8 @@ function App() {
         .eq("id", taskId);
   
       if (!error) {
-        // Remove task from state after successful deletion
         setTasks(currentTasks => currentTasks.filter(task => task.id !== taskId));
         
-        // Vibrate on success (for user feedback)
         if (navigator.vibrate) navigator.vibrate([50, 50]);
         
         console.log("Task deleted successfully:", taskId);
@@ -83,12 +148,11 @@ function App() {
     
   const toggleTask = async (taskId, currentCompleted) => {
     try {
-      // Attempt to update the task
       const { data, error } = await supabase
         .from("tasks")
         .update({ completed: !currentCompleted })
         .eq("id", taskId)
-        .select(); // Ensure we see the updated row
+        .select();
   
       if (error) {
         console.error("Supabase Error:", error.message);
@@ -114,8 +178,6 @@ function App() {
       alert(`Client-side error: ${err.message}`);
     }
   };
-  
-  
 
   const filteredTasks = tasks.filter(task => {
     if (filter === "active") return !task.completed;
@@ -123,10 +185,37 @@ function App() {
     return true;
   });
 
+  if (!session) {
+    return (
+      <div className="auth-container">
+        <form onSubmit={handleLogin} className="auth-form">
+          <h1>Tasks</h1>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button type="submit">Login</button>
+        </form>
+      </div>
+    );
+  }
   return (
     <div className="container">
       <div className="header">
-        <h1>Tasks</h1>
+        <div className="header-top">
+          <h1>Tasks</h1>
+          <button onClick={handleLogout} className="logout-button">
+            Logout
+          </button>
+        </div>
         <div className="filter-buttons">
           {["all", "active", "completed"].map(filterType => (
             <button
