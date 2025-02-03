@@ -233,9 +233,14 @@ function App() {
   // Celebration effect on task completion
   const celebrateCompletion = () => {
     confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
+      particleCount: 200,
+      spread: 100,
+      origin: { y: 0.5, x: 0.5 },
+      colors: ['#FF3B30', '#007AFF', '#34C759', '#FF9500'],
+      startVelocity: 30,
+      gravity: 0.8,
+      ticks: 200,
+      shapes: ['circle', 'square']
     });
   };
   const deleteTask = async (taskId) => {
@@ -266,13 +271,13 @@ function App() {
         .update({ completed: !currentCompleted })
         .eq("id", taskId)
         .select();
-  
+
       if (error) {
         console.error("Supabase Error:", error.message);
         alert(`Failed to update task: ${error.message}`);
         return;
       }
-  
+
       if (data && data.length > 0) {
         console.log("Task updated successfully:", data);
         setTasks(currentTasks =>
@@ -282,16 +287,16 @@ function App() {
               : task
           )
         );
+        if (!currentCompleted) {
+          celebrateCompletion(); // Add this line here
+        }
         if (navigator.vibrate) navigator.vibrate(50);
-      } else {
-        console.warn("No data returned from update. Task may not have been updated.");
       }
     } catch (err) {
       console.error("Client Error:", err.message);
       alert(`Client-side error: ${err.message}`);
     }
   };
-
   const filteredTasks = tasks.filter(task => {
     if (filter === "active") return !task.completed;
     if (filter === "completed") return task.completed;
