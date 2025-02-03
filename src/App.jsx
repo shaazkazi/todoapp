@@ -14,7 +14,7 @@ function App() {
   const [error, setError] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
-  const [filter, setFilter] = useState("all");
+  const [filter, setFilter] = useState("active");
   const [isLogin, setIsLogin] = useState(true);
   const [newPassword, setNewPassword] = useState('');
   const [hash, setHash] = useState(null);
@@ -435,17 +435,17 @@ const addTask = async (e) => {
           </div>
         )}
   
-        <div className="filter-buttons">
-          {["all", "active", "completed"].map(filterType => (
-            <button
-              key={filterType}
-              className={filter === filterType ? "active" : ""}
-              onClick={() => setFilter(filterType)}
-            >
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
-            </button>
-          ))}
-        </div>
+  <div className="filter-buttons">
+  {["active", "all", "completed"].map(filterType => (
+    <button
+      key={filterType}
+      className={filter === filterType ? "active" : ""}
+      onClick={() => setFilter(filterType)}
+    >
+      {filterType.charAt(0).toUpperCase() + filterType.slice(1)}
+    </button>
+  ))}
+</div>
       </div>
   
       <div className="task-list">
