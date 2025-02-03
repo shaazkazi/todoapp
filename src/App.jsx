@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "./utils/supabase";
 import { format } from "date-fns";
 import SwipeToDelete from 'react-swipe-to-delete-ios';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import confetti from 'canvas-confetti';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -17,6 +19,24 @@ function App() {
   const [hash, setHash] = useState(null);
   const [isResetPassword, setIsResetPassword] = useState(false);
 
+  // New state for enhancements
+  const [theme, setTheme] = useState('light');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTasks, setSelectedTasks] = useState([]);
+  const [taskCategory, setTaskCategory] = useState('personal');
+  const [taskPriority, setTaskPriority] = useState('medium');
+  const [dueDate, setDueDate] = useState('');
+  const [showStats, setShowStats] = useState(false);
+  const [taskNote, setTaskNote] = useState('');
+
+  // Stats calculation
+  const stats = {
+    total: tasks.length,
+    completed: tasks.filter(t => t.completed).length,
+    active: tasks.filter(t => !t.completed).length,
+    completionRate: tasks.length ? 
+      Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0
+  };
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -136,26 +156,88 @@ function App() {
     else setTasks(data || []);
   };
 
+  // Theme toggle function
+  const toggleTheme = () => {
+    const newTheme = theme === 'light' ? 'dark' : 'light';
+    setTheme(newTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  // Enhanced addTask function
   const addTask = async (e) => {
     e.preventDefault();
     if (!newTask.trim()) return;
 
-    const { error } = await supabase
-      .from("tasks")
-      .insert([{ 
-        title: newTask,
-        completed: false,
-        created_at: new Date().toISOString(),
-        user_id: session.user.id
-      }]);
+    const newTaskObj = {
+      title: newTask,
+      completed: false,
+      created_at: new Date().toISOString(),
+      user_id: session.user.id,
+      category: taskCategory,
+      priority: taskPriority,
+      due_date: dueDate,
+      notes: taskNote
+    };
+    
+    const { error } = await supabase.from("tasks").insert([newTaskObj]);
     
     if (!error) {
       setNewTask("");
+      setTaskNote("");
+      setDueDate("");
       fetchTasks();
       if (navigator.vibrate) navigator.vibrate(50);
     }
   };
 
+  // Batch actions
+  const handleBatchDelete = async () => {
+    if (selectedTasks.length === 0) return;
+    
+    const { error } = await supabase
+      .from("tasks")
+      .delete()
+      .in('id', selectedTasks);
+
+    if (!error) {
+      setTasks(tasks.filter(task => !selectedTasks.includes(task.id)));
+      setSelectedTasks([]);
+    }
+  };
+
+  const handleBatchComplete = async () => {
+    if (selectedTasks.length === 0) return;
+    
+    const { error } = await supabase
+      .from("tasks")
+      .update({ completed: true })
+      .in('id', selectedTasks);
+
+    if (!error) {
+      fetchTasks();
+      setSelectedTasks([]);
+    }
+  };
+
+  // Handle drag and drop
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+
+    const items = Array.from(tasks);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setTasks(items);
+  };
+
+  // Celebration effect on task completion
+  const celebrateCompletion = () => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
   const deleteTask = async (taskId) => {
     try {
       const { error } = await supabase

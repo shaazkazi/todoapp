@@ -436,3 +436,231 @@ body {
 .auth-switch:hover {
   text-decoration: underline;
 }
+:root {
+  --ios-blue: #007AFF;
+  --ios-red: #FF3B30;
+  --ios-background: #000000;
+  --ios-surface: #1C1C1E;
+  --ios-gray: #8E8E93;
+  --ios-border: #38383A;
+  --text: #FFFFFF;
+  --gradient-start: #2E1065;
+  --gradient-end: #1E1B4B;
+  --completed-text: #64748B;
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+}
+
+/* Theme Variables */
+[data-theme='light'] {
+  --ios-background: #F2F2F7;
+  --ios-surface: #FFFFFF;
+  --ios-border: #C5C5C7;
+  --text: #000000;
+  --completed-text: #8E8E93;
+}
+
+[data-theme='dark'] {
+  --ios-background: #000000;
+  --ios-surface: #1C1C1E;
+  --ios-border: #38383A;
+  --text: #FFFFFF;
+  --completed-text: #64748B;
+}
+
+/* Enhanced Header Controls */
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.theme-toggle, .stats-toggle {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.theme-toggle:hover, .stats-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Stats Panel */
+.stats-panel {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 16px 0;
+  backdrop-filter: blur(10px);
+}
+
+.stat-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.completion-rate {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  position: relative;
+  margin-top: 8px;
+}
+
+.completion-bar {
+  position: absolute;
+  height: 100%;
+  background: linear-gradient(to right, #60A5FA, #818CF8);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+/* Enhanced Task Input */
+.task-input-container {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.category-select, .priority-select, .due-date-input {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ios-border);
+  background: var(--ios-surface);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.task-notes {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--ios-border);
+  background: var(--ios-surface);
+  color: var(--text);
+  font-size: 15px;
+  resize: vertical;
+  min-height: 60px;
+  margin-bottom: 12px;
+}
+
+/* Priority Indicators */
+.priority-high {
+  border-left: 4px solid #FF3B30;
+}
+
+.priority-medium {
+  border-left: 4px solid #FF9500;
+}
+
+.priority-low {
+  border-left: 4px solid #34C759;
+}
+
+/* Task Category Tags */
+.task-category {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-left: 8px;
+}
+
+/* Task Notes Display */
+.task-notes-display {
+  font-size: 14px;
+  color: var(--ios-gray);
+  margin: 4px 0;
+  line-height: 1.4;
+}
+
+/* Due Date Display */
+.due-date {
+  margin-left: 12px;
+  padding: 2px 8px;
+  background: rgba(255, 59, 48, 0.1);
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+/* Batch Actions */
+.batch-actions {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.batch-actions button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--ios-blue);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.batch-actions button:hover {
+  transform: translateY(-1px);
+}
+
+/* Task Selection Checkbox */
+.task-selector {
+  margin-right: 12px;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid var(--ios-blue);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-selector:checked {
+  background: var(--ios-blue);
+  position: relative;
+}
+
+.task-selector:checked::after {
+  content: '✓';
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+}
+
+/* Drag and Drop Styles */
+.task-item {
+  transition: transform 0.2s ease;
+}
+
+.task-item:hover {
+  transform: translateX(4px);
+}
+
+/* Animation Keyframes */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.task-item {
+  animation: slideIn 0.3s ease forwards;
+}
