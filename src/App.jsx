@@ -93,14 +93,18 @@ function App() {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut({
-      scope: 'local'
-    });
+    // Clear local storage first
+    localStorage.clear();
     
-    if (!error) {
-      setSession(null);
-      window.location.href = '/';
-    }
+    // Multiple logout attempts with different scopes
+    await supabase.auth.signOut({ scope: 'local' });
+    await supabase.auth.signOut({ scope: 'others' });
+    
+    // Force clear session state
+    setSession(null);
+    
+    // Hard redirect to clear all states
+    window.location.href = 'https://toodoolister.netlify.app';
   };
   
 
@@ -125,6 +129,7 @@ function App() {
     const { data, error } = await supabase
       .from("tasks")
       .select("*")
+      .eq('user_id', session.user.id)
       .order("created_at", { ascending: false });
     
     if (error) console.error("Error fetching tasks:", error);
