@@ -3,6 +3,7 @@ import { supabase } from "./utils/supabase";
 import { format } from "date-fns";
 import SwipeToDelete from 'react-swipe-to-delete-ios';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { AddTaskModal } from './components/AddTaskModal';
 import confetti from 'canvas-confetti';
 
 function App() {
@@ -28,15 +29,11 @@ function App() {
   const [dueDate, setDueDate] = useState('');
   const [showStats, setShowStats] = useState(false);
   const [taskNote, setTaskNote] = useState('');
+  const [subTasks, setSubTasks] = useState([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+// Move this to the top of the file, before App component
 
-  // Stats calculation
-  const stats = {
-    total: tasks.length,
-    completed: tasks.filter(t => t.completed).length,
-    active: tasks.filter(t => !t.completed).length,
-    completionRate: tasks.length ? 
-      Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0
-  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -77,6 +74,14 @@ function App() {
       setHash(hash);
     }
   }, []);
+  const stats = {
+    total: tasks.length,
+    completed: tasks.filter(t => t.completed).length,
+    active: tasks.filter(t => !t.completed).length,
+    completionRate: tasks.length ? 
+      Math.round((tasks.filter(t => t.completed).length / tasks.length) * 100) : 0
+  };
+    
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -163,32 +168,6 @@ function App() {
     document.documentElement.setAttribute('data-theme', newTheme);
   };
 
-  // Enhanced addTask function
-  const addTask = async (e) => {
-    e.preventDefault();
-    if (!newTask.trim()) return;
-
-    const newTaskObj = {
-      title: newTask,
-      completed: false,
-      created_at: new Date().toISOString(),
-      user_id: session.user.id,
-      category: taskCategory,
-      priority: taskPriority,
-      due_date: dueDate,
-      notes: taskNote
-    };
-    
-    const { error } = await supabase.from("tasks").insert([newTaskObj]);
-    
-    if (!error) {
-      setNewTask("");
-      setTaskNote("");
-      setDueDate("");
-      fetchTasks();
-      if (navigator.vibrate) navigator.vibrate(50);
-    }
-  };
 
   // Batch actions
   const handleBatchDelete = async () => {
@@ -297,11 +276,44 @@ function App() {
       alert(`Client-side error: ${err.message}`);
     }
   };
-  const filteredTasks = tasks.filter(task => {
-    if (filter === "active") return !task.completed;
-    if (filter === "completed") return task.completed;
-    return true;
-  });
+ // Remove the duplicate filteredTasks declaration and combine the search with existing filter
+const filteredTasks = tasks.filter(task => {
+  const matchesSearch = task.title.toLowerCase().includes(searchQuery.toLowerCase());
+  if (filter === "active") return !task.completed && matchesSearch;
+  if (filter === "completed") return task.completed && matchesSearch;
+  return matchesSearch;
+});
+
+// Update the addTask function to include notes
+// Enhanced addTask function
+const addTask = async (e) => {
+  e.preventDefault();
+  if (!newTask.trim()) return;
+
+  const newTaskObj = {
+    title: newTask,
+    completed: false,
+    created_at: new Date().toISOString(),
+    user_id: session.user.id,
+    category: taskCategory,
+    priority: taskPriority,
+    due_date: dueDate || null,
+    notes: taskNote
+  };
+  
+  const { error } = await supabase.from("tasks").insert([newTaskObj]);
+  
+  if (!error) {
+    setNewTask("");
+    setTaskNote("");
+    setDueDate("");
+    setTaskCategory("personal");
+    setTaskPriority("medium");
+    setIsAddModalOpen(false);
+    fetchTasks();
+    if (navigator.vibrate) navigator.vibrate(50);
+  }
+};
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
@@ -392,10 +404,36 @@ function App() {
       <div className="header">
         <div className="header-top">
           <h1>Tasks</h1>
-          <button onClick={handleLogout} className="logout-button">
-            Logout
-          </button>
+          <div className="header-controls">
+            <button onClick={toggleTheme} className="theme-toggle">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </button>
+            <button onClick={() => setShowStats(!showStats)} className="stats-toggle">
+              📊
+            </button>
+            <button onClick={handleLogout} className="logout-button">
+              Logout
+            </button>
+          </div>
         </div>
+  
+        {showStats && (
+          <div className="stats-panel">
+            <div className="stat-item">
+              <span>Total: {stats.total}</span>
+              <span>Completed: {stats.completed}</span>
+              <span>Active: {stats.active}</span>
+              <div className="completion-rate">
+                <div 
+                  className="completion-bar" 
+                  style={{width: `${stats.completionRate}%`}}
+                />
+                <span>{stats.completionRate}%</span>
+              </div>
+            </div>
+          </div>
+        )}
+  
         <div className="filter-buttons">
           {["all", "active", "completed"].map(filterType => (
             <button
@@ -408,45 +446,67 @@ function App() {
           ))}
         </div>
       </div>
-
-      <form onSubmit={addTask} className="input-group">
-        <input
-          type="text"
-          value={newTask}
-          onChange={(e) => setNewTask(e.target.value)}
-          placeholder="Add a task"
-          aria-label="New task input"
-        />
-        <button type="submit" className="add-button">Add</button>
-      </form>
-
+  
       <div className="task-list">
-        {filteredTasks.map((task, index) => (
-          <SwipeToDelete
-            key={task.id}
-            onDelete={() => deleteTask(task.id)}
-            height={88}
-          >
-            <div 
-              className={`task-item ${task.completed ? 'completed' : ''}`} 
-              style={{animationDelay: `${index * 0.05}s`}}
-            >
-              <div className="task-content">
-                <div 
-                  className={`task-checkbox ${task.completed ? 'checked' : ''}`}
-                  onClick={() => toggleTask(task.id, task.completed)}
-                />
-                <div className="task-details">
-                  <div className="task-title">{task.title}</div>
-                  <div className="task-meta">
-                    {format(new Date(task.created_at), 'MMM d, h:mm a')}
-                  </div>
-                </div>
-              </div>
+  {filteredTasks.map((task, index) => (
+    <SwipeToDelete
+      key={task.id}
+      onDelete={() => deleteTask(task.id)}
+      height={120}
+    >
+      <div 
+        className={`task-item ${task.completed ? 'completed' : ''} priority-${task.priority}`}
+      >
+        <div className="task-content">
+          <div 
+            className={`task-checkbox ${task.completed ? 'checked' : ''}`}
+            onClick={() => toggleTask(task.id, task.completed)}
+          />
+          <div className="task-details">
+            <div className="task-header">
+              <span className="task-title">{task.title}</span>
+              <span className={`task-category ${task.category}`}>
+                {task.category}
+              </span>
             </div>
-          </SwipeToDelete>
-        ))}
+            {task.notes && (
+              <div className="task-notes-display">{task.notes}</div>
+            )}
+            <div className="task-meta">
+              <span>{format(new Date(task.created_at), 'MMM d, h:mm a')}</span>
+              {task.due_date && (
+                <span className="due-date">
+                  Due: {format(new Date(task.due_date), 'MMM d, h:mm a')}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
+    </SwipeToDelete>
+  ))}
+</div>
+      <button onClick={() => setIsAddModalOpen(true)} className="add-task-button">
+        +
+      </button>
+      {isAddModalOpen && (
+  <AddTaskModal
+    isOpen={isAddModalOpen}
+    onClose={() => setIsAddModalOpen(false)}
+    newTask={newTask}
+    setNewTask={setNewTask}
+    taskCategory={taskCategory}
+    setTaskCategory={setTaskCategory}
+    taskPriority={taskPriority}
+    setTaskPriority={setTaskPriority}
+    dueDate={dueDate}
+    setDueDate={setDueDate}
+    taskNote={taskNote}
+    setTaskNote={setTaskNote}
+    handleSubmit={addTask}
+  />
+)}
+      
     </div>
   );
 }
