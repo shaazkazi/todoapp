@@ -9,8 +9,6 @@ export const AddTaskModal = ({
   setTaskCategory,
   taskPriority,
   setTaskPriority,
-  dueDate,
-  setDueDate,
   taskNote,
   setTaskNote,
   handleSubmit
@@ -20,7 +18,11 @@ export const AddTaskModal = ({
   const handleModalSubmit = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    handleSubmit(e);
+    
+    // Set due date to 3 hours from now by default
+    const dueDate = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+    
+    handleSubmit(e, dueDate);
   };
 
   return (
@@ -55,12 +57,6 @@ export const AddTaskModal = ({
             <option value="medium">Medium Priority</option>
             <option value="high">High Priority</option>
           </select>
-          <input
-            type="datetime-local"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="modal-input"
-          />
           <textarea
             value={taskNote}
             onChange={(e) => setTaskNote(e.target.value)}
@@ -69,7 +65,7 @@ export const AddTaskModal = ({
           />
           <div className="modal-actions">
             <button type="button" onClick={onClose}>Cancel</button>
-            <button type="submit">Add Task</button>
+            <button type="submit">Add Task (Due in 3 hours)</button>
           </div>
         </form>
       </div>

@@ -290,6 +290,8 @@ const addTask = async (e) => {
   e.preventDefault();
   if (!newTask.trim()) return;
 
+  const dueDate = new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString();
+
   const newTaskObj = {
     title: newTask,
     completed: false,
@@ -297,16 +299,15 @@ const addTask = async (e) => {
     user_id: session.user.id,
     category: taskCategory,
     priority: taskPriority,
-    due_date: dueDate || null,
+    due_date: dueDate,
     notes: taskNote
   };
-  
+
   const { error } = await supabase.from("tasks").insert([newTaskObj]);
   
   if (!error) {
     setNewTask("");
     setTaskNote("");
-    setDueDate("");
     setTaskCategory("personal");
     setTaskPriority("medium");
     setIsAddModalOpen(false);
